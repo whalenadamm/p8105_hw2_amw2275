@@ -87,7 +87,7 @@ The NYC Transit data set contains information about all entry and exit locations
 #### Some answers to some questions:
 
 1) There are `r ` distinct stations in this data set.
-2) `r ` stations are ADA compliant.
+2) `r nrow(filter(transit_df, ada=="TRUE"))` stations are ADA compliant.
 3) `r ` percent of station entrances/exits that do not have vending allow entrance.
 
 [more things to come here]
@@ -96,6 +96,31 @@ The NYC Transit data set contains information about all entry and exit locations
 
 ## Problem 3
 
+First, import and clean the `pols` data set.
+
+```{r}
+pols_df = 
+  read_csv("./data/pols-month.csv") %>% 
+  separate(mon, c("year", "month", "day")) %>% 
+  mutate(
+    month = as.integer(month),
+    year = as.integer(year),
+    day = as.integer(day)
+  ) %>% 
+  pivot_longer(
+    c(prez_gop, prez_dem),
+    names_to = "party",
+    names_prefix = "prez_",
+    values_to = "president"
+  )
+
+left_join(pols_df, month_df, by = "month") %>% 
+  relocate(year, month_name) %>% 
+  select(-month) %>% 
+  mutate()
+
+pols_df
+```
 
 
 
