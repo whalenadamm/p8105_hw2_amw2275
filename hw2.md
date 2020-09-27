@@ -6,14 +6,14 @@ Adam Whalen
 library(tidyverse)
 ```
 
-    ## ── Attaching packages ─────────────────────────────────────────────────────────────────────────── tidyverse 1.3.0 ──
+    ## ── Attaching packages ─────────────────────────────────────────────────────── tidyverse 1.3.0 ──
 
     ## ✓ ggplot2 3.3.2     ✓ purrr   0.3.4
     ## ✓ tibble  3.0.3     ✓ dplyr   1.0.2
     ## ✓ tidyr   1.1.2     ✓ stringr 1.4.0
     ## ✓ readr   1.3.1     ✓ forcats 0.5.0
 
-    ## ── Conflicts ────────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+    ## ── Conflicts ────────────────────────────────────────────────────────── tidyverse_conflicts() ──
     ## x dplyr::filter() masks stats::filter()
     ## x dplyr::lag()    masks stats::lag()
 
@@ -98,7 +98,56 @@ left_join(precip_df, month_df, by = "month")
 This dataset contains information from the Mr. Trash Wheel trash
 collector in Baltimore, MD. As trash flows to the Inner Harbor,
 Mr. Trash Wheel collects that trash and stores it in a dumpster. This
-datset contains information on year, month, and trash collected,
+dataset contains information on year, month, and trash collected,
 including some specific kinds of trash. There are a total of 344 rows in
 our final dataset. Additional data sheets include monthly precipitation
 data.
+
+## Problem 2
+
+Read and clean the NYC Transit data set.
+
+``` r
+transit_df = 
+  read_csv("./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>% 
+  janitor::clean_names() %>% 
+  select(line:entry, vending, ada) %>%
+  mutate(entry = recode(entry, "YES" = 1, "NO" = 0)) %>% view()
+```
+
+    ## Parsed with column specification:
+    ## cols(
+    ##   .default = col_character(),
+    ##   `Station Latitude` = col_double(),
+    ##   `Station Longitude` = col_double(),
+    ##   Route8 = col_double(),
+    ##   Route9 = col_double(),
+    ##   Route10 = col_double(),
+    ##   Route11 = col_double(),
+    ##   ADA = col_logical(),
+    ##   `Free Crossover` = col_logical(),
+    ##   `Entrance Latitude` = col_double(),
+    ##   `Entrance Longitude` = col_double()
+    ## )
+
+    ## See spec(...) for full column specifications.
+
+The NYC Transit data set contains information about all entry and exit
+locations for every subway station in New York. The data set consists of
+1868 observations and 19 variables, including location, line, routes
+served, and ADA compliance to name a few. To clean the dataset, we
+tidied variable names, retained only select important variables, and
+converted a character variable to logical. However, these data are not
+completely tidy yet, as we have multiple columns that pertain to the
+same piece of information (route), for example.
+
+#### Some answers to some questions:
+
+1)  There are `r` distinct stations in this data set.
+2)  `r` stations are ADA compliant.
+3)  `r` percent of station entrances/exits that do not have vending
+    allow entrance.
+
+\[more things to come here\]
+
+## Problem 3

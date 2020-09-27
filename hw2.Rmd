@@ -68,4 +68,34 @@ precip_df =
 left_join(precip_df, month_df, by = "month")
 ```
 
-This dataset contains information from the Mr. Trash Wheel trash collector in Baltimore, MD. As trash flows to the Inner Harbor, Mr. Trash Wheel collects that trash and stores it in a dumpster. This datset contains information on year, month, and trash collected, including some specific kinds of trash. There are a total of `r nrow(trashwheel_df)` rows in our final dataset. Additional data sheets include monthly precipitation data. 
+This dataset contains information from the Mr. Trash Wheel trash collector in Baltimore, MD. As trash flows to the Inner Harbor, Mr. Trash Wheel collects that trash and stores it in a dumpster. This dataset contains information on year, month, and trash collected, including some specific kinds of trash. There are a total of `r nrow(trashwheel_df)` rows in our final dataset. Additional data sheets include monthly precipitation data. 
+
+## Problem 2
+
+Read and clean the NYC Transit data set.
+
+```{r}
+transit_df = 
+  read_csv("./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>% 
+  janitor::clean_names() %>% 
+  select(line:entry, vending, ada) %>%
+  mutate(entry = recode(entry, "YES" = 1, "NO" = 0)) %>% view()
+```
+
+The NYC Transit data set contains information about all entry and exit locations for every subway station in New York. The data set consists of `r nrow(transit_df)` observations and `r ncol(transit_df)` variables, including location, line, routes served, and ADA compliance to name a few. To clean the dataset, we tidied variable names, retained only select important variables, and converted a character variable to logical. However, these data are not completely tidy yet, as we have multiple columns that pertain to the same piece of information (route), for example. 
+
+#### Some answers to some questions:
+
+1) There are `r ` distinct stations in this data set.
+2) `r ` stations are ADA compliant.
+3) `r ` percent of station entrances/exits that do not have vending allow entrance.
+
+[more things to come here]
+
+
+
+## Problem 3
+
+
+
+
