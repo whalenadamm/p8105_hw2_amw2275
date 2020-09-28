@@ -109,7 +109,7 @@ pols_df =
   ) %>% 
   pivot_longer(
     c(prez_gop, prez_dem),
-    names_to = "party",
+    names_to = ".values",
     names_prefix = "prez_",
     values_to = "president"
   )
