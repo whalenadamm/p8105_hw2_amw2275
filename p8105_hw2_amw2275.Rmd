@@ -4,7 +4,7 @@ author: Adam Whalen
 output: github_document
 ---
 
-```{r}
+```{r setup}
 library(tidyverse)
 library(readxl)
 ```
@@ -13,7 +13,7 @@ library(readxl)
 
 Read the Mr. Trash Wheel dataset.
 
-```{r}
+```{r trashwheel_import}
 trashwheel_df = 
   read_xlsx(
     "./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx",
@@ -29,7 +29,7 @@ trashwheel_df =
 
 Read precipitation data for 2018 and 2017
 
-```{r}
+```{r precip_import}
 precip_2018 = 
   read_excel(
     "./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx",
@@ -55,7 +55,7 @@ precip_2017 =
 
 Now combine annual precipitation.
 
-```{r}
+```{r precip_merge}
 month_df = 
   tibble(
     month = 1:12,
@@ -74,7 +74,7 @@ This dataset contains information from the Mr. Trash Wheel trash collector in Ba
 
 Read and clean the NYC Transit data set.
 
-```{r}
+```{r transit_import}
 transit_df = 
   read_csv("./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>% 
   janitor::clean_names() %>% 
@@ -94,7 +94,7 @@ The NYC Transit data set contains information about all entry and exit locations
 3) `r format(round((nrow(filter(transit_df, entry == "TRUE" & vending == "NO")) / nrow(filter(transit_df, vending == "NO"))) * 100, 2), nsmall = 2)` percent of entrances and exits that do not have ticket vending allow entrance.
 
 Now, reformat the data set by route name variables.
-```{r}
+```{r transit_tidying}
 transit_tidy =
   transit_df %>% 
   mutate(
@@ -118,7 +118,7 @@ There are `r nrow(distinct(filter(transit_tidy, route_name == "A"), station_name
 
 First, import and clean the `pols` data set.
 
-```{r}
+```{r pols_import_tidy}
 pols_df = 
   read_csv("./data/pols-month.csv") %>% 
   separate(mon, c("year", "month", "day")) %>% 
@@ -139,7 +139,7 @@ pols_tidy =
 ```
 
 Next, import and clean the `snp` data set.
-```{r}
+```{r snp_import_tidy}
 snp_df = 
   read_csv("./data/snp.csv") %>% 
   separate (date, c("month", "day", "year"), sep = "/") %>% 
@@ -156,29 +156,31 @@ snp_tidy =
 ```
 
 Then, import and clean the `unemployment` data set.
-```{r}
+```{r unemp_import_tidy}
 unemployment_df = 
   read_csv("./data/unemployment.csv") %>% 
   pivot_longer(
     cols = Jan:Dec,
     names_to = "month_abb",
     values_to = "unemp_rate"
-  )
+  ) %>% 
+  janitor::clean_names()
 
-month_df %>% 
-  mutate(month_abb = month.abb)
-  
+month_df = 
+  month_df %>% 
+    mutate(month_abb = month.abb)
+
 unemployment_tidy = 
   left_join(unemployment_df, month_df, by = "month_abb") %>% 
   relocate(year, month_name) %>% 
-  select(-month_abb)
+  select(-c(month_abb, month))
 ```
 
 Finally, merge the `pol` and `snp` data sets, then merge `unemployment`.
-```{r}
+```{r complete_merge}
 complete_df = 
   left_join(pols_tidy, snp_tidy, by = c("year", "month_name")) %>% 
   left_join(unemployment_tidy, by = c("year", "month_name"))
 ```
 
-
+These data sets come from the political statistics company FiveThirtyEight and consist of various measures related to government and politics in the United States. The `pols` data set contains information about national elected officials and their party affiliations since 1947. The `snp` data set contains information about closing market value for the S&P 500 by year and month. The `unemployment` data set contains information about the national unemployment rate in the US by month and year. Our combined data set has `r nrow(complete_df)` monthly observations and `r ncol(complete_df)` variables, compiled from the three individual sets. Important variables include president's political party, unemployment rate, and close value for the S&P.
