@@ -79,18 +79,40 @@ transit_df =
   read_csv("./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>% 
   janitor::clean_names() %>% 
   select(line:entry, vending, ada) %>%
-  mutate(entry = recode(entry, "YES" = 1, "NO" = 0)) %>% view()
+  mutate(
+    entry = recode(entry, "YES" = 1, "NO" = 0),
+    entry = as.logical(entry)
+  )
 ```
 
 The NYC Transit data set contains information about all entry and exit locations for every subway station in New York. The data set consists of `r nrow(transit_df)` observations and `r ncol(transit_df)` variables, including location, line, routes served, and ADA compliance to name a few. To clean the dataset, we tidied variable names, retained only select important variables, and converted a character variable to logical. However, these data are not completely tidy yet, as we have multiple columns that pertain to the same piece of information (route), for example. 
 
 #### Some answers to some questions:
 
-1) There are `r ` distinct stations in this data set.
-2) `r nrow(filter(transit_df, ada=="TRUE"))` stations are ADA compliant.
+1) There are `r count(distinct(transit_df, station_name, line))` distinct stations in this data set.
+2) `r nrow(distinct(filter(transit_df, ada == "TRUE"), station_name, line))` stations are ADA compliant.
 3) `r ` percent of station entrances/exits that do not have vending allow entrance.
 
-[more things to come here]
+Now, reformat the data set by route name variables.
+```{r}
+transit_tidy =
+  transit_df %>% 
+  mutate(
+    route8 = as.character(route8),
+    route9 = as.character(route9),
+    route10 = as.character(route10),
+    route11 = as.character(route11),
+    ) %>% 
+  pivot_longer(
+    cols = route1:route11,
+    names_to = "route_number",
+    names_prefix = "route",
+    values_to = "route_name"
+  ) %>% 
+  drop_na(route_name)
+```
+
+There are `r nrow(distinct(filter(transit_tidy, route_name == "A"), station_name, line))` distinct stations that serve the A line. Of those that serve the A, `r nrow(distinct(filter(transit_tidy, route_name == "A", ada == "TRUE"), station_name, line))` stations are ADA compliant.
 
 
 
@@ -105,21 +127,18 @@ pols_df =
   mutate(
     month = as.integer(month),
     year = as.integer(year),
-    day = as.integer(day)
-  ) %>% 
-  pivot_longer(
-    c(prez_gop, prez_dem),
-    names_to = ".values",
-    names_prefix = "prez_",
-    values_to = "president"
+    day = as.integer(day),
+    president = case_when(
+      prez_gop == 1 ~ "gop",
+      prez_dem == 1 ~ "dem"
+    )
   )
+pols_tidy = 
+  left_join(pols_df, month_df, by = "month") %>% 
+    relocate(year, month_name) %>% 
+    select(-c(month, prez_gop, prez_dem))
 
-left_join(pols_df, month_df, by = "month") %>% 
-  relocate(year, month_name) %>% 
-  select(-month) %>% 
-  mutate()
-
-pols_df
+pols_tidy
 ```
 
 
