@@ -91,7 +91,7 @@ The NYC Transit data set contains information about all entry and exit locations
 
 1) There are `r count(distinct(transit_df, station_name, line))` distinct stations in this data set.
 2) `r nrow(distinct(filter(transit_df, ada == "TRUE"), station_name, line))` stations are ADA compliant.
-3) `r ` percent of station entrances/exits that do not have vending allow entrance.
+3) `r format(round((nrow(filter(transit_df, entry == "TRUE" & vending == "NO")) / nrow(filter(transit_df, vending == "NO"))) * 100, 2), nsmall = 2)` percent of entrances and exits that do not have ticket vending allow entrance.
 
 Now, reformat the data set by route name variables.
 ```{r}
@@ -112,9 +112,7 @@ transit_tidy =
   drop_na(route_name)
 ```
 
-There are `r nrow(distinct(filter(transit_tidy, route_name == "A"), station_name, line))` distinct stations that serve the A line. Of those that serve the A, `r nrow(distinct(filter(transit_tidy, route_name == "A", ada == "TRUE"), station_name, line))` stations are ADA compliant.
-
-
+There are `r nrow(distinct(filter(transit_tidy, route_name == "A"), station_name, line))` distinct stations that serve the A line. Of those that serve the A, `r nrow(distinct(filter(transit_tidy, route_name == "A" & ada == "TRUE"), station_name, line))` stations are ADA compliant.
 
 ## Problem 3
 
@@ -133,13 +131,54 @@ pols_df =
       prez_dem == 1 ~ "dem"
     )
   )
+
 pols_tidy = 
   left_join(pols_df, month_df, by = "month") %>% 
     relocate(year, month_name) %>% 
-    select(-c(month, prez_gop, prez_dem))
-
-pols_tidy
+    select(-c(month, day, prez_gop, prez_dem))
 ```
 
+Next, import and clean the `snp` data set.
+```{r}
+snp_df = 
+  read_csv("./data/snp.csv") %>% 
+  separate (date, c("month", "day", "year"), sep = "/") %>% 
+  mutate(
+    month = as.integer(month),
+    year = as.integer(year),
+    day = as.integer(day)
+  )
+
+snp_tidy = 
+  left_join(snp_df, month_df, by = "month") %>% 
+  relocate(year, month_name) %>% 
+  select(-c(day, month))
+```
+
+Then, import and clean the `unemployment` data set.
+```{r}
+unemployment_df = 
+  read_csv("./data/unemployment.csv") %>% 
+  pivot_longer(
+    cols = Jan:Dec,
+    names_to = "month_abb",
+    values_to = "unemp_rate"
+  )
+
+month_df %>% 
+  mutate(month_abb = month.abb)
+  
+unemployment_tidy = 
+  left_join(unemployment_df, month_df, by = "month_abb") %>% 
+  relocate(year, month_name) %>% 
+  select(-month_abb)
+```
+
+Finally, merge the `pol` and `snp` data sets, then merge `unemployment`.
+```{r}
+complete_df = 
+  left_join(pols_tidy, snp_tidy, by = c("year", "month_name")) %>% 
+  left_join(unemployment_tidy, by = c("year", "month_name"))
+```
 
 
